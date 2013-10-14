@@ -1,5 +1,5 @@
 Name:           webtail
-Version:        0.3.3
+Version:        0.3.4
 Release:        1%{?dist}
 Summary:        Tail your filesystem from the web
 
@@ -32,6 +32,8 @@ Tail your filesystem from the web.
 %{python_sitelib}/%{name}-%{version}-py*.egg-info
 
 %changelog
+* Mon Oct 14 2013 Olle Lundberg <geek@nerd.sh> - 0.3.4
+- Hack around old jinja2 on RHEL/CentOS.
 * Mon Oct 14 2013 Olle Lundberg <geek@nerd.sh> - 0.3.3
 - Clean up of spec file.
 * Mon Oct 14 2013 Olle Lundberg <geek@nerd.sh> - 0.3.2
