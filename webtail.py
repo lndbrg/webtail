@@ -21,6 +21,8 @@
 #     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #     THE SOFTWARE.
 
+__version__ = "0.3.0"
+
 from gevent import monkey
 monkey.patch_all()
 import io
