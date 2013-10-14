@@ -171,13 +171,26 @@ if __name__ == '__main__':
                       action="store_true",
                       default=False,
                       dest="debug",
-                      help="turn on debug for the flask application")
+                      help="turn on debug for the flask application, defaults to False")
     parser.add_option("-d", "--directory",
                       action="store",
                       default='.',
                       dest="directory",
                       metavar="DIR",
-                      help="read from DIR")
+                      help="read from DIR, defaults to '.'")
+    parser.add_option("-l", "--listen",
+                      action="store",
+                      default='',
+                      dest="listen",
+                      metavar="ADDRESS",
+                      help="bind to ADDRESS, defaults to all")
+    parser.add_option("-p", "--port",
+                      action="store",
+                      default=5000,
+                      dest="port",
+                      metavar="PORT",
+                      type="int",
+                      help="bind to PORT, default to 5000")
 
     (options, args) = parser.parse_args()
 
@@ -185,7 +198,7 @@ if __name__ == '__main__':
     os.chdir(options.directory)
 
     # Here we go!
-    http_server = WSGIServer(('', 5000), app)
+    http_server = WSGIServer((options.listen, options.port), app)
     try:
         http_server.serve_forever()
     except KeyboardInterrupt:
