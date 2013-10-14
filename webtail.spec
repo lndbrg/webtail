@@ -1,5 +1,5 @@
 Name:           webtail
-Version:        0.3.1
+Version:        0.3.2
 Release:        1%{?dist}
 Summary:        Tail your filesystem from the web
 
@@ -29,7 +29,11 @@ Tail your filesystem from the web.
 %defattr(-,root,root,-)
 %doc LICENSE
 %{_bindir}/%{name}
+%{python_sitelib}/%{name}.py*
+%{python_sitelib}/%{name}-%{version}-py*.egg-info
 
 %changelog
+* Mon Oct 14 2013 Olle Lundberg <geek@nerd.sh> - 0.3.2
+- Clean up of spec file.
 * Mon Oct 14 2013 Olle Lundberg <geek@nerd.sh> - 0.3.0
 - First release.
