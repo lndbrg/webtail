@@ -1,12 +1,12 @@
 Name:           webtail
-Version:        0.3.0
+Version:        0.3.1
 Release:        1%{?dist}
 Summary:        Tail your filesystem from the web
 
 Group:          Applications/Text
 License:        MIT
 URL:            https://bitbucket.org/olle/webtail 
-Source0:        https://bitbucket.org/olle/webtail/get/%{version}.tar.gz
+Source0:        https://bitbucket.org/olle/webtail/get/%{name}-%{version}.tar.gz
 
 BuildArch:      noarch
 BuildRequires:  python-devel
