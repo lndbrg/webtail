@@ -162,10 +162,7 @@ def stream_all_raw_interleaved():
             gevent.spawn(filereader, thefile)
 
         while True:
-            try:
-                yield "{0}: {1}".format(*q.get())
-            except Empty:
-                time.sleep(0.001)
+            yield "{0}: {1}".format(*q.get())
 
     return Response(httpwriter(), mimetype='text/plain')
 
