@@ -35,7 +35,7 @@ import io
 import os
 import time
 import gevent
-from gevent.queue import Empty, JoinableQueue
+from gevent.queue import JoinableQueue
 from flask import Flask, Response, render_template_string
 
 directory_list_template = """
