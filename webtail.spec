@@ -1,5 +1,5 @@
 Name:           webtail
-Version:        0.3.6
+Version:        0.4.0
 Release:        1%{?dist}
 Summary:        Tail your filesystem from the web
 
