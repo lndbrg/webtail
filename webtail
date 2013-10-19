@@ -114,6 +114,26 @@ def tail(thefile):
         yield line
 
 
+def tail_to_queue(thefile, queue):
+    for line in tail(thefile):
+        queue.put((thefile, line, ))
+        time.sleep(0.001)
+        # The aboce sleep let's gevent schedule another greenlet.
+        # This gives the effect (noticed in the interleaved route)
+        # that we are able to put stuff in the queue from many concurrent
+        # tails. Without we would have read one file until that tail waits
+        # for more lines, which in a busy environment might take a *really*
+        # long time.
+
+
+def spawn_and_yield_from_queue(queue):
+    for thefile in files():
+        gevent.spawn(tail_to_queue, thefile, queue)
+
+    while True:
+        yield "{0}: {1}".format(*queue.get())
+
+
 def files():
     return (item for item in os.listdir(os.curdir) if os.path.isfile(item))
 
@@ -143,28 +163,16 @@ def stream_all_interleaved():
 
 @app.route("/stream/raw/<thefile>")
 def raw(thefile):
-    return Response(tail(thefile), mimetype='text/plain')
+    return Response(tail(thefile),
+                    mimetype='text/plain'
+                    )
 
 
 @app.route("/stream/all/raw/interleaved")
 def stream_all_raw_interleaved():
-    q = JoinableQueue()
-
-    def httpwriter():
-
-        def filereader(thefile):
-            for line in tail(thefile):
-                q.put((thefile, line, ))
-                #sleep in order to let gevent schedule another greenlet.
-                time.sleep(0.001)
-
-        for thefile in files():
-            gevent.spawn(filereader, thefile)
-
-        while True:
-            yield "{0}: {1}".format(*q.get())
-
-    return Response(httpwriter(), mimetype='text/plain')
+    return Response(spawn_and_yield_from_queue(JoinableQueue()),
+                    mimetype='text/plain'
+                    )
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -176,26 +184,30 @@ if __name__ == '__main__':
                       action="store_true",
                       default=False,
                       dest="debug",
-                      help="turn on debug for the flask application, defaults to False")
+                      help="turn on debug for the flask application, defaults to False"
+                      )
     parser.add_option("-d", "--directory",
                       action="store",
                       default='.',
                       dest="directory",
                       metavar="DIR",
-                      help="read from DIR, defaults to '.'")
+                      help="read from DIR, defaults to '.'"
+                      )
     parser.add_option("-l", "--listen",
                       action="store",
                       default='',
                       dest="listen",
                       metavar="ADDRESS",
-                      help="bind to ADDRESS, defaults to all")
+                      help="bind to ADDRESS, defaults to all"
+                      )
     parser.add_option("-p", "--port",
                       action="store",
                       default=5000,
                       dest="port",
                       metavar="PORT",
                       type="int",
-                      help="bind to PORT, default to 5000")
+                      help="bind to PORT, default to 5000"
+                      )
 
     (options, args) = parser.parse_args()
 
@@ -208,3 +220,5 @@ if __name__ == '__main__':
         http_server.serve_forever()
     except KeyboardInterrupt:
         pass
+
+# vim: set expandtab:ts=4:sw=4
