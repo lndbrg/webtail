@@ -21,7 +21,7 @@
 #     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #     THE SOFTWARE.
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 # Wonder why this hack is here? Please check:
 # https://bugzilla.redhat.com/show_bug.cgi?id=882016
@@ -215,14 +215,29 @@ if __name__ == '__main__':
                       type="int",
                       help="bind to PORT, default to 5000"
                       )
+    parser.add_option("-q", "--quiet",
+                      action="store_true",
+                      default=False,
+                      dest="quiet",
+                      help="makes webtail quieter."
+                      )
 
     (options, args) = parser.parse_args()
+
+    logdest = "default"
 
     app.debug = options.debug
     os.chdir(options.directory)
 
     # Here we go!
-    http_server = WSGIServer((options.listen, options.port), app)
+    if options.quiet:
+        logdest = None
+        stdout = sys.stdout
+        stderr = sys.stderr
+        sys.stdout = io.open(os.devnull)
+        sys.stderr = io.open(os.devnull)
+
+    http_server = WSGIServer((options.listen, options.port), app, log=logdest)
     try:
         http_server.serve_forever()
     except KeyboardInterrupt:
