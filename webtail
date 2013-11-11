@@ -35,8 +35,9 @@ import io
 import os
 import time
 import gevent
+import fnmatch
 from gevent.queue import JoinableQueue
-from flask import Flask, Response, render_template_string
+from flask import Flask, g, Response, render_template_string
 
 directory_list_template = """
 <!doctype html>
@@ -131,29 +132,31 @@ def tail_to_queue(thefile, queue):
         # long time.
 
 
-def spawn_and_yield_from_queue(queue):
-    for thefile in files():
+def spawn_and_yield_from_queue(queue, files):
+    for thefile in files:
         gevent.spawn(tail_to_queue, thefile, queue)
 
     while True:
         yield "{0}: {1}".format(*queue.get())
 
 
-def files():
-    return (item for item in os.listdir(os.curdir) if os.path.isfile(item))
+def files(match):
+    return (item for item in os.listdir(os.curdir) if (os.path.isfile(item) and \
+            os.access(item, os.R_OK) and \
+            fnmatch.fnmatch(item, match)))
 
 
 @app.route('/')
 def index():
     return render_template_string(directory_list_template,
-                                  files=files()
+                                  files=g.get('files', None)
                                   )
 
 
 @app.route("/stream/all")
 def stream_all():
     return render_template_string(stream_all_template,
-                                  files=files(),
+                                  files=g.get('files', None),
                                   path="/stream/raw/"
                                   )
 
@@ -175,7 +178,7 @@ def raw(thefile):
 
 @app.route("/stream/all/raw/interleaved")
 def stream_all_raw_interleaved():
-    return Response(spawn_and_yield_from_queue(JoinableQueue()),
+    return Response(spawn_and_yield_from_queue(JoinableQueue(), g.get('files',None)),
                     mimetype='text/plain'
                     )
 @app.after_request
@@ -210,6 +213,17 @@ if __name__ == '__main__':
                       metavar="ADDRESS",
                       help="bind to ADDRESS, defaults to all"
                       )
+    parser.add_option("-m", "--match",
+                      action="store",
+                      default='*',
+                      dest="match",
+                      metavar="MATCH",
+                      help="""
+only tail files matching the given pattern, defaults to "*".
+The standard rules for unix globbing is applied and the input is passed throug the fnmatch.fnmatch() function.
+Your pattern should be quoted or escaped or it will be subject to glob expansion by bash.
+"""
+                      )
     parser.add_option("-p", "--port",
                       action="store",
                       default=5000,
@@ -230,7 +244,12 @@ if __name__ == '__main__':
     logdest = "default"
 
     app.debug = options.debug
+
     os.chdir(options.directory)
+
+    @app.before_request
+    def before_request():
+        g.files = files(options.match)
 
     # Here we go!
     if options.quiet:
