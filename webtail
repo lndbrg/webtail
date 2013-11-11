@@ -141,9 +141,10 @@ def spawn_and_yield_from_queue(queue, files):
 
 
 def files(match):
-    return (item for item in os.listdir(os.curdir) if (os.path.isfile(item) and \
-            os.access(item, os.R_OK) and \
-            fnmatch.fnmatch(item, match)))
+    return (item for item in os.listdir(os.curdir) if (os.path.isfile(item) and
+            os.access(item, os.R_OK) and
+            fnmatch.fnmatch(item, match))
+            )
 
 
 @app.route('/')
@@ -178,9 +179,13 @@ def raw(thefile):
 
 @app.route("/stream/all/raw/interleaved")
 def stream_all_raw_interleaved():
-    return Response(spawn_and_yield_from_queue(JoinableQueue(), g.get('files',None)),
+    return Response(spawn_and_yield_from_queue(JoinableQueue(),
+                                               files=g.get('files', None)
+                                               ),
                     mimetype='text/plain'
                     )
+
+
 @app.after_request
 def add_header(response):
     response.headers['Cache-Control'] = 'public, max-age=0'
