@@ -45,11 +45,11 @@ directory_list_template = """
 </head>
 <body>
 <p>
-Welcome to Webtail, you can choose to tream <a href="/stream/all">all</a>
-files in separate containersor stream all files
+Welcome to Webtail, you can choose to stream <a href="/stream/all">all</a>
+files in separate containers or stream all files
 <a href="/stream/all/interleaved">interleaved</a> in the same container
 </p>
-<p>You can also chose to stream one file at the time:<br>
+<p>You can also choose to stream one file at the time:<br>
 {% for file in files %}
 <a href="/stream/raw/{{file}}">{{file}}</a><br>
 {% endfor %}
@@ -63,14 +63,14 @@ stream_all_template = """
 <head>
 <title>Webtail</title>
 <style>
+html, body, form, div.interleaved {
+width: 100%;
+height: 100%;
+}
+
 div {
 width: 50%;
 float: left;
-}
-
-div.interleaved {
-height: 100%;
-width: 100%;
 }
 
 iframe {
