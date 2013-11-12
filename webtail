@@ -160,7 +160,13 @@ def tail_to_queue(thefile, queue):
         # long time.
 
 
-def spawn_and_yield_from_queue(queue, files):
+def spawn_and_yield_from_queue(files, queue):
+    """Spawns a new greenlet that calls :func:`open_and_tail_to_queue` for each
+    filename in the generator and passes the queue along.
+
+    :param: files: generator that contains file names.
+    :param: queue: queue to pass along and yield from.
+    """
     for thefile in files:
         gevent.spawn(tail_to_queue, thefile, queue)
 
@@ -211,8 +217,8 @@ def raw(thefile):
 
 @app.route("/stream/all/raw/interleaved")
 def stream_all_raw_interleaved():
-    return Response(spawn_and_yield_from_queue(Queue(),
-                                               files=g.get('files', None)),
+    return Response(
+        spawn_and_yield_from_queue(files=g.get('files', None), queue=Queue()),
                     mimetype='text/plain')
 
 
