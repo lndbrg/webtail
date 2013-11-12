@@ -149,6 +149,13 @@ def tail(filedesc):
 
 
 def tail_to_queue(thefile, queue):
+    """Iterates through the generator provided by :func:`open_and_tail`
+    and puts the contents in the queue provided to the function. It then
+    sleeps for `SLEEP_INTERVAL` to enable cooperative multitasking.
+
+    :param: thefile: filename to pass to :func:`open_and_tail`.
+    :param: queue: queue to put the contents in.
+    """
     for line in open_and_tail(thefile):
         queue.put((thefile, line, ))
         time.sleep(SLEEP_INTERVAL)
