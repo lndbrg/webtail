@@ -199,7 +199,7 @@ def add_header(response):
     return response
 
 
-if __name__ == '__main__':
+def main():
     from optparse import OptionParser
     from gevent.pywsgi import WSGIServer
 
@@ -274,4 +274,6 @@ expansion by bash.
     except KeyboardInterrupt:
         pass
 
+if __name__ == '__main__':
+    main()
 # vim: set expandtab:ts=4:sw=4
