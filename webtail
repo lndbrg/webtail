@@ -144,7 +144,15 @@ def spawn_and_yield_from_queue(queue, files):
         yield "{0}: {1}".format(*queue.get())
 
 
-def files(match):
+def enumerate_files(match):
+    """Generator function that enumerate files in the current directory that
+    fullfils the following criterias:
+        * Is a file.
+        * Is accessible for the current user.
+        * Matches the provided pattern.
+
+    :param: match: pattern passed to `fnmatch.fnmatch`
+    """
     return (item for item in os.listdir(os.curdir)
             if (os.path.isfile(item) and
                 os.access(item, os.R_OK) and
@@ -250,7 +258,7 @@ expansion by bash.
 
     @app.before_request
     def before_request():
-        g.files = files(options.match)
+        g.files = enumerate_files(options.match)
 
     # Here we go!
     if options.quiet:
