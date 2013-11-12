@@ -148,7 +148,7 @@ def tail(filedesc):
         yield line
 
 
-def tail_to_queue(thefile, queue):
+def open_and_tail_to_queue(thefile, queue):
     """Iterates through the generator provided by :func:`open_and_tail`
     and puts the contents in the queue provided to the function. It then
     sleeps for `SLEEP_INTERVAL` to enable cooperative multitasking.
@@ -175,7 +175,7 @@ def spawn_and_yield_from_queue(files, queue):
     :param: queue: queue to pass along and yield from.
     """
     for thefile in files:
-        gevent.spawn(tail_to_queue, thefile, queue)
+        gevent.spawn(open_and_tail_to_queue, thefile, queue)
 
     while True:
         yield "{0}: {1}".format(*queue.get())
