@@ -21,6 +21,16 @@
 #   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 #   THE SOFTWARE.
 
+"""
+webtail
+~~~~~~~
+
+A utilitity to tail your files over http.
+
+:copyright: (c) 2013 by Olle Lundberg.
+:license: MIT, see LICENSE for more details.
+"""
+
 __version__ = "1.1.0"
 
 # Wonder why this hack is here? Please check:
