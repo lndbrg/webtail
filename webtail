@@ -122,12 +122,26 @@ SLEEP_INTERVAL = 0.01
 
 app = Flask(__name__)
 
+def open_and_tail(filename):
+    """Opens a file, seeks to the beginning of it and returns a tail
+    generator.
 
-def tail(thefile):
-    fd = io.open(thefile, 'r')
-    fd.seek(0)
+    :param filename: the name of the file to be opened.
+    """
+    filedesc = io.open(filename, 'r')
+    filedesc.seek(0)
+    return tail(filedesc)
+
+
+def tail(filedesc):
+    """Generator function that reads lines from a file descriptor and yields
+    its contents. If no contents is available from the file descriptor it
+    sleeps for `SLEEP_INTERVAL` to enable cooperative multitasking.
+
+    :param filedesc: the file desciptor to read from.
+    """
     while True:
-        line = fd.readline()
+        line = filedesc.readline()
         if not line:
             time.sleep(SLEEP_INTERVAL)
             continue
@@ -135,7 +149,7 @@ def tail(thefile):
 
 
 def tail_to_queue(thefile, queue):
-    for line in tail(thefile):
+    for line in open_and_tail(thefile):
         queue.put((thefile, line, ))
         time.sleep(SLEEP_INTERVAL)
         # The above sleep let's gevent schedule another greenlet.
@@ -191,7 +205,7 @@ def stream_all_interleaved():
 
 @app.route("/stream/raw/<thefile>")
 def raw(thefile):
-    return Response(tail(thefile),
+    return Response(open_and_tail(thefile),
                     mimetype='text/plain')
 
 
