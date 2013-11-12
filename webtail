@@ -38,7 +38,7 @@ import os
 import time
 import gevent
 import fnmatch
-from gevent.queue import JoinableQueue
+from gevent.queue import Queue
 from flask import Flask, g, Response, render_template_string
 
 DIRECTORY_LIST_TEMPLATE = """
@@ -179,7 +179,7 @@ def raw(thefile):
 
 @app.route("/stream/all/raw/interleaved")
 def stream_all_raw_interleaved():
-    return Response(spawn_and_yield_from_queue(JoinableQueue(),
+    return Response(spawn_and_yield_from_queue(Queue(),
                                                files=g.get('files', None)),
                     mimetype='text/plain')
 
