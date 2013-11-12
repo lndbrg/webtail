@@ -25,7 +25,7 @@
 webtail
 ~~~~~~~
 
-A utilitity to tail your files over http.
+A utility to tail your files over http.
 
 :copyright: (c) 2013 by Olle Lundberg.
 :license: MIT, see LICENSE for more details.
@@ -120,7 +120,7 @@ setInterval(function autoScroll() {
 
 SLEEP_INTERVAL = 0.01
 
-app = Flask(__name__) #pylint: disable=invalid-name
+app = Flask(__name__)  # pylint: disable=invalid-name
 
 
 def open_and_tail(filename):
@@ -139,7 +139,7 @@ def tail(filedesc):
     its contents. If no contents is available from the file descriptor it
     sleeps for `SLEEP_INTERVAL` to enable cooperative multitasking.
 
-    :param filedesc: the file desciptor to read from.
+    :param filedesc: the file descriptor to read from.
     """
     while True:
         line = filedesc.readline()
@@ -184,7 +184,7 @@ def spawn_and_yield_from_queue(files, queue):
 
 def enumerate_files(match):
     """Generator function that enumerate files in the current directory that
-    fullfils the following criterias:
+    fulfills the following criterias:
         * Is a file.
         * Is accessible for the current user.
         * Matches the provided pattern.
@@ -304,7 +304,7 @@ expansion by bash.
     os.chdir(options.directory)
 
     @app.before_request
-    def before_request(): # pylint: disable=unused-variable
+    def before_request():  # pylint: disable=unused-variable
         """Prepare a new enumeration of files per request."""
         g.files = enumerate_files(options.match)
 
