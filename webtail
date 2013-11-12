@@ -120,7 +120,8 @@ setInterval(function autoScroll() {
 
 SLEEP_INTERVAL = 0.01
 
-app = Flask(__name__)
+app = Flask(__name__) #pylint: disable=invalid-name
+
 
 def open_and_tail(filename):
     """Opens a file, seeks to the beginning of it and returns a tail
@@ -198,12 +199,14 @@ def enumerate_files(match):
 
 @app.route('/')
 def index():
+    """Lists the files to tail and the different ways to tail them."""
     return render_template_string(DIRECTORY_LIST_TEMPLATE,
                                   files=g.get('files', None))
 
 
 @app.route("/stream/all")
 def stream_all():
+    """Streams all files in separate iframes."""
     return render_template_string(STREAM_ALL_TEMPLATE,
                                   files=g.get('files', None),
                                   path="/stream/raw/")
@@ -211,6 +214,7 @@ def stream_all():
 
 @app.route("/stream/all/interleaved")
 def stream_all_interleaved():
+    """Streams all files in one interleaved iframe."""
     return render_template_string(STREAM_ALL_TEMPLATE,
                                   files=['interleaved'],
                                   path="/stream/all/raw/")
@@ -218,25 +222,31 @@ def stream_all_interleaved():
 
 @app.route("/stream/raw/<thefile>")
 def raw(thefile):
+    """Streams one file over http with the mime type set to text/plain.
+    This endpoint is used in :func:`stream_all`"""
     return Response(open_and_tail(thefile),
                     mimetype='text/plain')
 
 
 @app.route("/stream/all/raw/interleaved")
 def stream_all_raw_interleaved():
-    return Response(
-        spawn_and_yield_from_queue(files=g.get('files', None), queue=Queue()),
+    """Streams all files interleaved over http with the mime type set to
+    text/plain. This endpoint is being ued in :func:`stream_all_interleaved`"""
+    return Response(spawn_and_yield_from_queue(files=g.get('files', None),
+                                               queue=Queue()),
                     mimetype='text/plain')
 
 
 @app.after_request
 def add_header(response):
+    """Makes sure we disable the http caching mechanism."""
     response.headers['Cache-Control'] = 'public, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     return response
 
 
 def main():
+    """Main entrypoint of the script"""
     from optparse import OptionParser
     from gevent.pywsgi import WSGIServer
 
@@ -294,7 +304,8 @@ expansion by bash.
     os.chdir(options.directory)
 
     @app.before_request
-    def before_request():
+    def before_request(): # pylint: disable=unused-variable
+        """Prepare a new enumeration of files per request."""
         g.files = enumerate_files(options.match)
 
     # Here we go!
@@ -308,6 +319,7 @@ expansion by bash.
         http_server.serve_forever()
     except KeyboardInterrupt:
         pass
+
 
 if __name__ == '__main__':
     main()
