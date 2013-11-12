@@ -9,17 +9,17 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-#     The above copyright notice and this permission notice shall be included in
-#     all copies or substantial portions of the Software.
+#    The above copyright notice and this permission notice shall be included in
+#    all copies or substantial portions of the Software.
 #
-#     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#     FROM,
-#     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#     THE SOFTWARE.
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM,
+#   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#   THE SOFTWARE.
 
 __version__ = "1.0.0"
 
@@ -41,7 +41,7 @@ import fnmatch
 from gevent.queue import JoinableQueue
 from flask import Flask, g, Response, render_template_string
 
-directory_list_template = """
+DIRECTORY_LIST_TEMPLATE = """
 <!doctype html>
 <head>
 <title>Webtail</title>
@@ -61,25 +61,26 @@ files in separate containers or stream all files
 </html>
 """
 
-stream_all_template = """
+STREAM_ALL_TEMPLATE = """
 <!doctype html>
 <head>
 <title>Webtail</title>
 <style>
-html, body, form, div.interleaved {
-width: 100%;
-height: 100%;
+
+html, form, iframe, div.interleaved {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  height: 90%;
 }
 
 div {
-width: 50%;
-float: left;
+  width: 50%;
+  float: left;
 }
 
-iframe {
-width: 100%;
-height: 90%
-}
 </style>
 </head>
 <body>
@@ -94,12 +95,11 @@ checked>Autoscroll {{file}}</label><br>
 
 <script type="text/javascript">
 setInterval(function autoScroll() {
-    console.log("Running");
     var checkboxes = document.querySelectorAll('input:checked');
-
+    var attr = "data-target"
     for(var i = 0; i < checkboxes.length; i+=1) {
         var checkbox = checkboxes[i];
-        var iframe = document.getElementById(checkbox.getAttribute("data-target"));
+        var iframe = document.getElementById(checkbox.getAttribute(attr));
         iframe.contentWindow.document.body.scrollTop+=20;
     }
     }, 10)
@@ -107,6 +107,8 @@ setInterval(function autoScroll() {
 </body>
 </html>
 """
+
+SLEEP_INTERVAL = 0.01
 
 app = Flask(__name__)
 
@@ -117,7 +119,7 @@ def tail(thefile):
     while True:
         line = fd.readline()
         if not line:
-            time.sleep(0)
+            time.sleep(SLEEP_INTERVAL)
             continue
         yield line
 
@@ -125,8 +127,8 @@ def tail(thefile):
 def tail_to_queue(thefile, queue):
     for line in tail(thefile):
         queue.put((thefile, line, ))
-        time.sleep(0)
-        # The aboce sleep let's gevent schedule another greenlet.
+        time.sleep(SLEEP_INTERVAL)
+        # The above sleep let's gevent schedule another greenlet.
         # This gives the effect (noticed in the interleaved route)
         # that we are able to put stuff in the queue from many concurrent
         # tails. Without we would have read one file until that tail waits
@@ -143,27 +145,28 @@ def spawn_and_yield_from_queue(queue, files):
 
 
 def files(match):
-    return (item for item in os.listdir(os.curdir) if (os.path.isfile(item) and
-                                                       os.access(item, os.R_OK) and
-                                                       fnmatch.fnmatch(item, match)))
+    return (item for item in os.listdir(os.curdir)
+            if (os.path.isfile(item) and
+                os.access(item, os.R_OK) and
+                fnmatch.fnmatch(item, match)))
 
 
 @app.route('/')
 def index():
-    return render_template_string(directory_list_template,
+    return render_template_string(DIRECTORY_LIST_TEMPLATE,
                                   files=g.get('files', None))
 
 
 @app.route("/stream/all")
 def stream_all():
-    return render_template_string(stream_all_template,
+    return render_template_string(STREAM_ALL_TEMPLATE,
                                   files=g.get('files', None),
                                   path="/stream/raw/")
 
 
 @app.route("/stream/all/interleaved")
 def stream_all_interleaved():
-    return render_template_string(stream_all_template,
+    return render_template_string(STREAM_ALL_TEMPLATE,
                                   files=['interleaved'],
                                   path="/stream/all/raw/")
 
@@ -198,7 +201,8 @@ if __name__ == '__main__':
                       action="store_true",
                       default=False,
                       dest="debug",
-                      help="turn on debug for the flask application, defaults to False")
+                      help="turn on debug for the flask application, "
+                           "defaults to False")
     parser.add_option("-d", "--directory",
                       action="store",
                       default='.',
@@ -218,8 +222,10 @@ if __name__ == '__main__':
                       metavar="MATCH",
                       help="""
 only tail files matching the given pattern, defaults to "*".
-The standard rules for unix globbing is applied and the input is passed throug the fnmatch.fnmatch() function.
-Your pattern should be quoted or escaped or it will be subject to glob expansion by bash.
+The standard rules for unix globbing is applied and the input is passed
+throug the fnmatch.fnmatch() function.
+Your pattern should be quoted or escaped or it will be subject to glob
+expansion by bash.
 """)
     parser.add_option("-p", "--port",
                       action="store",
