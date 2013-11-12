@@ -18,5 +18,21 @@ setup(
     author_email='geek@nerd.sh',
     license='MIT License',
     url='https://bitbucket.org/olle/webtail',
-    scripts=[name]
+    scripts=[name],
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Framework :: Flask',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Information Technology',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Topic :: Internet :: Log Analysis',
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
+        'Topic :: System :: Logging'
+    ]
 )
