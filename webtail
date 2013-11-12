@@ -248,7 +248,7 @@ expansion by bash.
                       dest="quiet",
                       help="makes webtail quieter.")
 
-    (options, args) = parser.parse_args()
+    options, _ = parser.parse_args()
 
     logdest = "default"
 
@@ -263,8 +263,6 @@ expansion by bash.
     # Here we go!
     if options.quiet:
         logdest = None
-        stdout = sys.stdout
-        stderr = sys.stderr
         sys.stdout = io.open(os.devnull)
         sys.stderr = io.open(os.devnull)
 
