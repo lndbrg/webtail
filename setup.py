@@ -1,6 +1,7 @@
 from distutils.core import setup
 import re
-name="webtail"
+
+name = "webtail"
 verstrline = open(name, "rt").read()
 versionre = r"^__version__ = ['\"]([^'\"]*)['\"]"
 mo = re.search(versionre, verstrline, re.M)
