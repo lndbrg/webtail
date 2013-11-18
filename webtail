@@ -31,7 +31,7 @@ A utility to tail your files over http.
 :license: MIT, see LICENSE for more details.
 """
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 # Wonder why this hack is here? Please check:
 # https://bugzilla.redhat.com/show_bug.cgi?id=882016
@@ -247,6 +247,11 @@ def add_header(response):
 
 def main():
     """Main entrypoint of the script"""
+    # This global is ugly, but it is better than to pass the
+    # interval through several levels of function that shouldn't know about
+    # it.
+    global SLEEP_INTERVAL  # pylint: disable=global-statement
+
     from optparse import OptionParser
     from gevent.pywsgi import WSGIServer
 
@@ -275,13 +280,19 @@ def main():
                       default='*',
                       dest="match",
                       metavar="MATCH",
-                      help="""
-only tail files matching the given pattern, defaults to "*".
-The standard rules for unix globbing is applied and the input is passed
-throug the fnmatch.fnmatch() function.
-Your pattern should be quoted or escaped or it will be subject to glob
-expansion by bash.
-""")
+                      help="""only tail files matching the given pattern,
+defaults to "*". The standard rules for unix globbing is applied and the
+input is passed through the fnmatch.fnmatch() function. Your pattern should
+be quoted or escaped or it will be subject to glob expansion by bash.""")
+    parser.add_option("-i", "--interval",
+                      action="store",
+                      default=SLEEP_INTERVAL,
+                      dest="interval",
+                      metavar="INTERVAL",
+                      type="float",
+                      help="""sleep interval, this is passed as an argument
+to time.sleep() and is what gevent uses for its wait timeout for the event hub.
+Lower number means higher cpu usage.Default is {0}""".format(SLEEP_INTERVAL))
     parser.add_option("-p", "--port",
                       action="store",
                       default=5000,
@@ -298,6 +309,8 @@ expansion by bash.
     options, _ = parser.parse_args()
 
     logdest = "default"
+
+    SLEEP_INTERVAL = options.interval  # Global.
 
     app.debug = options.debug
 
